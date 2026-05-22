@@ -1,0 +1,15 @@
+{
+  "model": "HybridWeightedScoreFusion",
+  "weights": {
+    "Popularity": 0.0,
+    "Content-Based": 0.15,
+    "LightGCN": 0.7,
+    "PMLP": 0.15
+  },
+  "sub_models": [
+    "Popularity",
+    "Content-Based",
+    "LightGCN",
+    "PMLP"
+  ]
+}

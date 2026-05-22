@@ -1,0 +1,29 @@
+# Entorno virtual
+.venv/
+
+# Variables de entorno (credenciales)
+.env
+**/.env
+
+# Node
+node_modules/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+
+# Archivos grandes (modelos y datos raw)
+ml/data/raw/ratings.parquet
+ml/data/raw/movies_metadata.parquet
+ml/models/saved/lightgcn_benchmark.npz
+
+# Jupyter
+.ipynb_checkpoints/
+
+.vscode/
+
+# OS
+.DS_Store
+Thumbs.db

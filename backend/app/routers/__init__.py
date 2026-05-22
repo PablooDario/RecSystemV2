@@ -1,0 +1,9 @@
+from app.routers.movie_router import router as movie_router
+from app.routers.user_router import router as user_router
+from app.routers.auth_router import router as auth_router
+from app.routers.registration_router import router as registration_router
+from app.routers.rating_router import router as rating_router
+from app.routers.recommendation_router import router as recommendation_router
+from app.routers.watchlist_router import router as watchlist_router
+from app.routers.personality_router import router as personality_router
+from app.routers.survey_router import router as survey_router

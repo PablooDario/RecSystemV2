@@ -1,0 +1,11 @@
+{
+  "model": "ContentBasedRecommender",
+  "cosine_sim_path": "/Users/dariozsh/Documents/Final RS/ml/data/benchmark/cosine_sim_benchmark.npy",
+  "movies_path": "/Users/dariozsh/Documents/Final RS/ml/data/benchmark/movies_benchmark.csv",
+  "hyperparameters": {
+    "positive_threshold": 3.5,
+    "top_seed_movies": 10,
+    "popularity_alpha": 0.1,
+    "beta": 1.0
+  }
+}
