@@ -4,14 +4,14 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
-_BASE_DIR = Path(__file__).resolve().parents[4]
+_BASE_DIR = Path(__file__).resolve().parent.parent.parent.parent.parent
 _ML_DIR = _BASE_DIR / "ml"
 _MODELS_DIR = _ML_DIR / "models" / "saved"
 _DATA_DIR = _ML_DIR / "data" / "benchmark"
 
 _COSINE_SIM_PATH = _DATA_DIR / "cosine_sim_benchmark.npy"
 _MOVIES_CSV_PATH = _DATA_DIR / "movies_benchmark.csv"
-_LIGHTGCN_PATH = _MODELS_DIR / "lightgcn_benchmark.npz"
+_LIGHTGCN_PATH = _MODELS_DIR / "lightgcn_items.npy"
 _PMLP_SV_PATH = _MODELS_DIR / "pmlp_sv.pkl"
 _HYBRID_META_PATH = _MODELS_DIR / "hybrid_meta.json"
 
@@ -47,9 +47,8 @@ def _get_item_embeddings() -> np.ndarray:
     global _item_embeddings
     if _item_embeddings is None:
         if not _LIGHTGCN_PATH.exists():
-            raise FileNotFoundError(f"LightGCN model not found: {_LIGHTGCN_PATH}")
-        data = np.load(_LIGHTGCN_PATH)
-        _item_embeddings = data["Ei_final"].astype(np.float32)
+            raise FileNotFoundError(f"LightGCN embeddings not found: {_LIGHTGCN_PATH}")
+        _item_embeddings = np.load(_LIGHTGCN_PATH).astype(np.float32)
     return _item_embeddings
 
 
