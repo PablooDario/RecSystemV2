@@ -1,3 +1,5 @@
+import traceback
+
 from fastapi import APIRouter, HTTPException, Depends
 from sqlalchemy.orm import Session
 from app.db.session import get_db
@@ -10,23 +12,33 @@ router = APIRouter(prefix="/recommendations", tags=["Recommendations"])
 
 @router.get("/{user_id}", response_model=RecommendationResponse)
 def get_recommendations(user_id: int, db: Session = Depends(get_db)):
+    print(f"\n{'='*70}\n[ROUTER] GET /recommendations/{user_id}\n{'='*70}", flush=True)
     engine = RecommendationEngine(db)
 
     try:
         result = engine.recommend(user_id)
+        print(f"[ROUTER] engine.recommend returned {len(result.get('sections', []))} sections", flush=True)
     except ValueError as e:
+        print(f"[ROUTER] ValueError: {e}", flush=True)
+        traceback.print_exc()
         raise HTTPException(status_code=404, detail=str(e))
     except FileNotFoundError as e:
+        print(f"[ROUTER] FileNotFoundError: {e}", flush=True)
+        traceback.print_exc()
         raise HTTPException(status_code=500, detail=f"Model artifact not found: {str(e)}")
     except Exception as e:
+        print(f"[ROUTER] Exception: {type(e).__name__}: {e}", flush=True)
+        traceback.print_exc()
         raise HTTPException(status_code=500, detail=f"Internal error: {str(e)}")
 
     if not result["sections"]:
+        print(f"[ROUTER] No sections, returning 404", flush=True)
         raise HTTPException(
             status_code=404,
             detail=f"No se encontraron recomendaciones para el usuario {user_id}."
         )
 
+    print(f"[ROUTER] Returning {len(result['sections'])} sections", flush=True)
     return result
 
 

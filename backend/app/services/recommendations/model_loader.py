@@ -60,15 +60,41 @@ def _get_pmlp_model():
     """
     global _pmlp_model
     if _pmlp_model is None:
+        print(f"[LOADER] _get_pmlp_model: first call, loading from disk", flush=True)
+        print(f"[LOADER]   _BASE_DIR={_BASE_DIR}", flush=True)
+        print(f"[LOADER]   _PMLP_PATH={_PMLP_PATH}", flush=True)
+        print(f"[LOADER]   _PMLP_PATH.exists()={_PMLP_PATH.exists()}", flush=True)
         if not _PMLP_PATH.exists():
             raise FileNotFoundError(f"Personality model not found: {_PMLP_PATH}")
         if str(_BASE_DIR) not in sys.path:
+            print(f"[LOADER]   adding {_BASE_DIR} to sys.path", flush=True)
             sys.path.insert(0, str(_BASE_DIR))
+
+        # Inspect what 'ml.models.personality' resolves to BEFORE unpickling
+        try:
+            import ml.models.personality as pers_mod
+            print(f"[LOADER]   ml.models.personality module file: {pers_mod.__file__}", flush=True)
+            cls = pers_mod.PersonalityMLPRecommender
+            print(f"[LOADER]   class loaded from: {cls.__module__}", flush=True)
+            # Check what attributes the class declares
+            test_attrs = [a for a in dir(cls) if not a.startswith('__')]
+            print(f"[LOADER]   class methods/attrs (first 10): {test_attrs[:10]}", flush=True)
+        except Exception as e:
+            print(f"[LOADER] ⚠️ failed to inspect ml.models.personality: {e}", flush=True)
+
         import pickle
         with open(_PMLP_PATH, "rb") as f:
             _pmlp_model = pickle.load(f)
+
+        print(f"[LOADER]   pickle loaded. type={type(_pmlp_model).__name__}", flush=True)
+        print(f"[LOADER]   instance __class__.__module__: {_pmlp_model.__class__.__module__}", flush=True)
+        print(f"[LOADER]   has _head: {hasattr(_pmlp_model, '_head')}", flush=True)
+        print(f"[LOADER]   has _mlp: {hasattr(_pmlp_model, '_mlp')}", flush=True)
+        print(f"[LOADER]   instance __dict__ keys (sample): {list(_pmlp_model.__dict__.keys())[:15]}", flush=True)
+
         # Restore references stripped before serialization
         _pmlp_model._cosine_sim = _get_cosine_sim()
+        print(f"[LOADER]   _cosine_sim restored", flush=True)
     return _pmlp_model
 
 
