@@ -12,7 +12,7 @@ _DATA_DIR = _ML_DIR / "data" / "benchmark"
 _COSINE_SIM_PATH = _DATA_DIR / "cosine_sim_benchmark.npy"
 _MOVIES_CSV_PATH = _DATA_DIR / "movies_benchmark.csv"
 _LIGHTGCN_PATH = _MODELS_DIR / "lightgcn_items.npy"
-_PMLP_SV_PATH = _MODELS_DIR / "pmlp_sv.pkl"
+_PMLP_PATH = _MODELS_DIR / "pmlp_b.pkl"
 _HYBRID_META_PATH = _MODELS_DIR / "hybrid_meta.json"
 
 # Lazy-loaded singletons
@@ -53,15 +53,22 @@ def _get_item_embeddings() -> np.ndarray:
 
 
 def _get_pmlp_model():
+    """
+    Load PMLP_B (personality recommender trained on Benchmark with coherent re-rank).
+    Restores cosine_sim reference (stripped at save time) so the model is
+    fully functional after unpickling.
+    """
     global _pmlp_model
     if _pmlp_model is None:
-        if not _PMLP_SV_PATH.exists():
-            raise FileNotFoundError(f"Personality model not found: {_PMLP_SV_PATH}")
+        if not _PMLP_PATH.exists():
+            raise FileNotFoundError(f"Personality model not found: {_PMLP_PATH}")
         if str(_BASE_DIR) not in sys.path:
             sys.path.insert(0, str(_BASE_DIR))
         import pickle
-        with open(_PMLP_SV_PATH, "rb") as f:
+        with open(_PMLP_PATH, "rb") as f:
             _pmlp_model = pickle.load(f)
+        # Restore references stripped before serialization
+        _pmlp_model._cosine_sim = _get_cosine_sim()
     return _pmlp_model
 
 

@@ -1,4 +1,5 @@
 import numpy as np
+import pandas as pd
 
 from app.services.recommendations.model_loader import (
     _get_cosine_sim,
@@ -8,6 +9,8 @@ from app.services.recommendations.model_loader import (
     _get_pmlp_model,
     get_n_items,
 )
+
+_HYBRID_INFERENCE_UID = -2  # distinct from personality_recommender's UID
 
 POSITIVE_THRESHOLD_CB = 3.5
 POSITIVE_THRESHOLD_CF = 4.0
@@ -58,26 +61,25 @@ def _cf_scores(user_ratings: dict[int, float]) -> np.ndarray:
 
 
 def _personality_scores(traits: dict[str, float]) -> np.ndarray:
+    """
+    Score every item for the given personality traits using the trained PMLP_B.
+
+    Uses model.score_all() so popularity_penalty is applied. The hybrid
+    blends raw scores (not coherent re-ranked recommendations) — coherent
+    re-rank is a list-level transformation, not a score, so it's incompatible
+    with the linear-combination blend used here.
+    """
     model = _get_pmlp_model()
-
-    trait_vec = np.array([
-        traits["openness"],
-        traits["conscientiousness"],
-        traits["extraversion"],
-        traits["agreeableness"],
-        traits["neuroticism"],
-    ], dtype=np.float32)
-
-    normed = (trait_vec - model._trait_mean) / model._trait_std
-    u, _ = model._mlp.forward(normed[None, :], dropout=0.0)
-    scores = (u @ model._Ei.T).ravel() + model._item_bias
-
-    if model._popularity_penalty > 0.0 and model._item_popularity is not None:
-        std = scores.std()
-        if std > 1e-8:
-            scores = scores - model._popularity_penalty * std * model._item_popularity
-
-    return scores
+    pers_df = pd.DataFrame([{
+        "user_id": _HYBRID_INFERENCE_UID,
+        "openness": float(traits["openness"]),
+        "conscientiousness": float(traits["conscientiousness"]),
+        "extraversion": float(traits["extraversion"]),
+        "agreeableness": float(traits["agreeableness"]),
+        "neuroticism": float(traits["neuroticism"]),
+    }])
+    model.set_personalities(pers_df)
+    return model.score_all(_HYBRID_INFERENCE_UID)
 
 
 def _popularity_scores() -> np.ndarray:
